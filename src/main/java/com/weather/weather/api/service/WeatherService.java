@@ -8,6 +8,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -26,6 +27,15 @@ public class WeatherService {
         this.repository = repository;
         this.restTemplate = restTemplate;
     }
+
+    public List<WeatherData> getAllWeatherData() {
+        return repository.findAll();
+    }
+
+    public WeatherData getWeatherById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+
 
     public WeatherData fetchAndSaveWeatherMeteomatics(String dateTime, String lat, String lon) {
         String url = String.format("%s/%s/t_2m:C/%s,%s/json?model=mix", meteomaticsUrl, dateTime, lat, lon);
