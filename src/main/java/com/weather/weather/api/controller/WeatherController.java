@@ -16,26 +16,41 @@ public class WeatherController {
         this.service = service;
     }
 
+    /**
+     * POST /api/weather/fetch
+     */
     @PostMapping("/fetch")
-    public WeatherData fetchWeather(@RequestParam String dateTime,
-                                    @RequestParam String lat,
-                                    @RequestParam String lon) {
-        return service.fetchAndSaveWeatherMeteomatics(dateTime, lat, lon);
+    public ResponseEntity<WeatherData> fetchWeather(
+            @RequestParam String dateTime,
+            @RequestParam String lat,
+            @RequestParam String lon,
+            @RequestParam String cityName) {
+        try {
+            WeatherData data = service.fetchAndSaveWeatherMeteomatics(dateTime, lat, lon, cityName);
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    // busca todos os dados
+    /**
+     * GET /api/weather/all
+     */
     @GetMapping("/all")
     public ResponseEntity<List<WeatherData>> getAllWeather() {
-        List<WeatherData> dados = weatherService.getAllWeatherData();
+        List<WeatherData> dados = service.getAllWeatherData();
         return ResponseEntity.ok(dados);
     }
 
-    // busca por id
+    /**
+     * GET /api/weather/{id}
+     */
     @GetMapping("/{id}")
     public ResponseEntity<WeatherData> getWeatherById(@PathVariable Long id) {
-        WeatherData dado = weatherService.getWeatherById(id);
-        if (dado == null) return ResponseEntity.notFound().build();
+        WeatherData dado = service.getWeatherById(id);
+        if (dado == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(dado);
     }
-
 }

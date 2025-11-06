@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class WeatherService {
@@ -28,17 +27,12 @@ public class WeatherService {
         this.restTemplate = restTemplate;
     }
 
-    public List<WeatherData> getAllWeatherData() {
-        return repository.findAll();
-    }
-
-    public WeatherData getWeatherById(Long id) {
-        return repository.findById(id).orElse(null);
-    }
-
-
-    public WeatherData fetchAndSaveWeatherMeteomatics(String dateTime, String lat, String lon) {
-        String url = String.format("%s/%s/t_2m:C/%s,%s/json?model=mix", meteomaticsUrl, dateTime, lat, lon);
+    /**
+     * Busca dados da API Meteomatics e salva no banco
+     */
+    public WeatherData fetchAndSaveWeatherMeteomatics(String dateTime, String lat, String lon, String cityName) {
+        String url = String.format("%s/%s/t_2m:C/%s,%s/json?model=mix",
+                meteomaticsUrl, dateTime, lat, lon);
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth(meteomaticsUser, meteomaticsPassword);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -46,8 +40,8 @@ public class WeatherService {
                 url,
                 HttpMethod.GET,
                 entity,
-                MeteomaticsResponse.class);
-        // Safe parse
+                MeteomaticsResponse.class
+        );
         double temp = 0.0;
         String obsDate = null;
         String description = "Temperatura 2m (C)";
@@ -64,12 +58,26 @@ public class WeatherService {
         }
         WeatherData data = new WeatherData(
                 null,
-                lat + "," + lon,
+                cityName,  // Agora salva o nome da cidade
                 temp,
-                null, // umidade
+                null,      // Umidade (nullable)
                 description,
-                obsDate != null ? java.time.LocalDateTime.parse(obsDate.replace("Z", "")) : java.time.LocalDateTime.now()
+                obsDate != null ? LocalDateTime.parse(obsDate.replace("Z", "")) : LocalDateTime.now()
         );
         return repository.save(data);
+    }
+
+    /**
+     * Busca todos os registros do banco
+     */
+    public List<WeatherData> getAllWeatherData() {
+        return repository.findAll();
+    }
+
+    /**
+     * Busca um registro específico por ID
+     */
+    public WeatherData getWeatherById(Long id) {
+        return repository.findById(id).orElse(null);
     }
 }
