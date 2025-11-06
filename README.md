@@ -17,7 +17,7 @@ bash
 git clone https://github.com/josivantarcio/desafio-gntech.git
 cd desafio-gntech
 2. Configure o MySQL
-Crie o banco de dados (via CLI, DBeaver ou Adminer):
+Crie o banco de dados.
 
 text
 SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/weather_db?useSSL=false&serverTimezone=UTC
@@ -84,6 +84,8 @@ Configure o banco e application.properties normalmente (veja acima)
 ## Compile com:
 bash
 mvn clean package
+docker build -t weather-api .
+docker run -p 8080:8080 --env-file .env weather-api
 java -jar target/weather-api-*.jar
 
 ### Principais Endpoints
