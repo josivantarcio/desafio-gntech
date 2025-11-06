@@ -33,6 +33,10 @@ public class WeatherService {
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
 
+        //Para teste
+        System.out.println(response.getBody());
+
+
         double temp = 0.0;
         String cidade = lon + "," + lat; // personalize se quiser
 
