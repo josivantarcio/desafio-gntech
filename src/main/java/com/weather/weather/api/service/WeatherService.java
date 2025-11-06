@@ -1,5 +1,6 @@
 package com.weather.weather.api.service;
 
+import com.weather.weather.api.dto.MeteomaticsResponse;
 import com.weather.weather.api.model.WeatherData;
 import com.weather.weather.api.repository.WeatherDataRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,24 +32,33 @@ public class WeatherService {
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth(meteomaticsUser, meteomaticsPassword);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
-
-        //Para teste
-        System.out.println(response.getBody());
-
-
+        ResponseEntity<MeteomaticsResponse> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                MeteomaticsResponse.class);
+        // Safe parse
         double temp = 0.0;
-        String cidade = lon + "," + lat; // personalize se quiser
-
-        String description = response.getBody().toString();
-
+        String obsDate = null;
+        String description = "Temperatura 2m (C)";
+        MeteomaticsResponse body = response.getBody();
+        if (body != null &&
+                body.getData() != null &&
+                !body.getData().isEmpty() &&
+                body.getData().get(0).getCoordinates() != null &&
+                !body.getData().get(0).getCoordinates().isEmpty() &&
+                body.getData().get(0).getCoordinates().get(0).getDates() != null &&
+                !body.getData().get(0).getCoordinates().get(0).getDates().isEmpty()) {
+            temp = body.getData().get(0).getCoordinates().get(0).getDates().get(0).getValue();
+            obsDate = body.getData().get(0).getCoordinates().get(0).getDates().get(0).getDate();
+        }
         WeatherData data = new WeatherData(
                 null,
-                cidade,  // você pode customizar aqui
-                temp,     // preencha após parsear
-                null,     // umidade (não retorna por padrão, precisa outro parâmetro)
+                lat + "," + lon,
+                temp,
+                null, // umidade
                 description,
-                LocalDateTime.now()
+                obsDate != null ? java.time.LocalDateTime.parse(obsDate.replace("Z", "")) : java.time.LocalDateTime.now()
         );
         return repository.save(data);
     }
